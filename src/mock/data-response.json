@@ -1,0 +1,27 @@
+{
+  "userdetails": [
+    {
+      "name": "user1",
+      "id": 1,
+      "test": "TEST DATA"
+    },
+    {
+      "name": "user2",
+      "id": 2,
+      "test": "TEST DATA"
+    },
+    {
+      "name": "user3",
+      "id": 3,
+      "test": "TEST DATA"
+    },
+    {
+      "name": "user4",
+      "id": 4,
+      "test": "TEST DATA"
+    }
+  ],
+  "validations": {
+
+  }
+}

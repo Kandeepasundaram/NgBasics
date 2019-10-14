@@ -1,0 +1,12 @@
+<p>child1 works!</p>
+<div class="title">
+  <form *ngFor="let user of users;let i = index;" id="defender{{i}}" #testForm="ngForm" (submit)="logClick(testForm)">
+    <div class="form-group">
+      <p>{{user.name}}</p>
+      <input type="email" class="form-control"  name="emailaddress" id="emailaddress" required ngModel/>
+      <input type="hidden" name="brand" [(ngModel)]="user.id" />
+      <input type="hidden" [(ngModel)]="user.name" class="form-control"  name="test"/>
+      <button type="submit">Submit</button>
+    </div>
+  </form>
+</div>
