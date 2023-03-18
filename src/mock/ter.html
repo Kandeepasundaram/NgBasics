@@ -1,0 +1,9 @@
+<app-date-of-birth [(ngModel)]="dob" 
+                   requiredError="Date of birth is required"
+                   minAgeError="You must be at least 18 years old"
+                   maxAgeError="You cannot be more than 120 years old"
+                   futureDateError="Date of birth cannot be in the future"
+                   #dobField="ngModel"></app-date-of-birth>
+<div *ngIf="dobField.invalid && dobField.touched" class="error-message">
+  {{ dobField.errors | errorMessage }}
+</div>
