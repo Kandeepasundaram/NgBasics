@@ -7,3 +7,14 @@
 <div *ngIf="dobField.invalid && dobField.touched" class="error-message">
   {{ dobField.errors | errorMessage }}
 </div>
+
+
+<mat-form-field>
+  <input matInput [matDatepicker]="dobPicker" [formControl]="formControl" (blur)="onTouched()" placeholder="Date of Birth">
+  <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
+  <mat-datepicker #dobPicker></mat-datepicker>
+  <mat-error *ngIf="formControl.invalid && formControl.touched">
+    {{ getErrorMessage() }}
+  </mat-error>
+</mat-form-field>
+
