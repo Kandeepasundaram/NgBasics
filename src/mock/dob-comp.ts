@@ -1,109 +1,145 @@
-import { Component, EventEmitter, forwardRef, Input, OnInit, Output } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, NG_VALIDATORS, FormControl, Validator } from '@angular/forms';
-import * as moment from 'moment';
+import {
+  Directive,
+  Input,
+  TemplateRef,
+  ElementRef,
+  Renderer2,
+  HostListener,
+} from '@angular/core';
 
-@Component({
-  selector: 'app-date-of-birth',
-  templateUrl: './date-of-birth.component.html',
-  styleUrls: ['./date-of-birth.component.css'],
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => DateOfBirthComponent),
-      multi: true
-    },
-    {
-      provide: NG_VALIDATORS,
-      useExisting: forwardRef(() => DateOfBirthComponent),
-      multi: true
-    }
-  ]
+@Directive({
+  selector: '[tooltip]',
 })
-export class DateOfBirthComponent implements OnInit, ControlValueAccessor, Validator {
+export class TooltipDirective {
+  @Input('tooltip') tooltipTemplate!: TemplateRef<any>;
 
-  @Input() requiredError: string = 'Date of birth is required';
-  @Input() minAgeError: string = 'You must be at least 18 years old';
-  @Input() maxAgeError: string = 'You cannot be more than 120 years old';
-  @Input() futureDateError: string = 'Date of birth cannot be in the future';
-  @Output() onTouched: EventEmitter<void> = new EventEmitter();
+  private tooltip!: HTMLElement;
 
-  dateOfBirth: Date;
-  disabled: boolean = false;
-
-  constructor() { }
-
-  ngOnInit() {
+  constructor(private elRef: ElementRef, private renderer: Renderer2) {
+    // Add CSS rule to position and style tooltip
+    const style = this.renderer.createElement('style');
+    style.textContent = `
+      .tooltip-wrapper {
+        position: absolute;
+        z-index: 9999;
+      }
+    `;
+    this.renderer.appendChild(document.head, style);
   }
 
-  validate(control: FormControl) {
-    const value = control.value;
-    if (!value) {
-      return { required: true };
-    }
-    const dateOfBirth = moment(value, 'YYYY-MM-DD');
-    if (!dateOfBirth.isValid()) {
-      return { invalid: true };
-    }
-    const age = moment().diff(dateOfBirth, 'years');
-    if (age < 18) {
-      return { minAge: true };
-    }
-    if (age > 120) {
-      return { maxAge: true };
-    }
-    if (dateOfBirth.isAfter(moment())) {
-      return { futureDate: true };
-    }
-    return null;
+  @HostListener('mouseenter') onMouseEnter() {
+    this.showTooltip();
   }
 
-  registerOnChange(fn: any) {
-    this.onChange = (value: Date) => {
-      this.dateOfBirth = value;
-      fn(value);
-    }
+  @HostListener('mouseleave') onMouseLeave() {
+    this.hideTooltip();
   }
 
-  registerOnTouched(fn: any) {
-    this.onTouched.emit();
-    this.onTouched.subscribe(fn);
+  private showTooltip() {
+    if (!this.tooltip) {
+      this.createTooltip();
+    }
+
+    this.renderer.setStyle(this.tooltip, 'display', 'block');
   }
 
-  setDisabledState(isDisabled: boolean) {
-    this.disabled = isDisabled;
+  private hideTooltip() {
+    this.renderer.setStyle(this.tooltip, 'display', 'none');
   }
 
-  writeValue(obj: any) {
-    if (obj) {
-      this.dateOfBirth = obj;
-    }
+  private createTooltip() {
+    const style = this.renderer.createElement('style');
+    style.textContent = `
+  .tooltip-wrapper {
+    position: absolute;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
 
-  onChange: any = () => { };
-
-  getErrorMessage() {
-    if (!this.dateOfBirth) {
-      return this.requiredError;
-    }
-    const dateOfBirth = moment(this.dateOfBirth, 'YYYY-MM-DD');
-    const age = moment().diff(dateOfBirth, 'years');
-    if (age < 18) {
-      return this.minAgeError;
-    }
-    if (age > 120) {
-      return this.maxAgeError;
-    }
-    if (dateOfBirth.isAfter(moment())) {
-      return this.futureDateError;
-    }
-
-    return '';
+  .tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    margin: 5px;
   }
 
-  get formControl() {
-    return new FormControl(this.dateOfBirth, [
-      Validators.required,
-      this.validate.bind(this)
-    ]);
+  .tooltip-arrow.top {
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #fff transparent;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .tooltip-arrow.bottom {
+    border-width: 5px 5px 0 5px;
+    border-color: #fff transparent transparent transparent;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .tooltip-content {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #333;
+    font-size: 14px;
+    line-height: 1.5;
+
+    padding: 10px;
+    text-align: center;
+    pointer-events: auto;
+  }
+`;
+    this.renderer.appendChild(document.head, style);
+
+    const tooltipWrapper = this.renderer.createElement('div');
+    const tooltipContent = this.tooltipTemplate.createEmbeddedView(null);
+    const tooltipContentElement = tooltipContent.rootNodes[0];
+
+    // Calculate position of the host element
+    const hostElement = this.elRef.nativeElement;
+
+    const hostRect = hostElement.getBoundingClientRect();
+    const hostCenter = (hostRect.left + hostRect.width) / 2;
+
+    // Calculate position of the tooltip
+    const tooltipRect = tooltipWrapper.getBoundingClientRect();
+    const tooltipWidth = tooltipRect.width;
+    const tooltipHeight = hostElement.offsetHeight;
+
+    console.log('hostRect.offsetHeight : ' + hostElement.offsetHeight);
+    console.log('tooltipHeight : ' + tooltipHeight);
+
+    console.log('hostRect.left : ' + hostRect.left);
+    console.log('hostCenter : ' + hostCenter);
+    console.log('tooltipWidth : ' + tooltipWidth);
+
+    // Set position of the tooltip
+    this.renderer.setStyle(
+      tooltipWrapper,
+      'top',
+      `${hostRect.top + tooltipHeight}px`
+    );
+    this.renderer.setStyle(
+      tooltipWrapper,
+      'left',
+      `${(hostCenter - tooltipWidth) / 2}px`
+    );
+
+    this.renderer.addClass(tooltipWrapper, 'tooltip-wrapper');
+    this.renderer.appendChild(tooltipWrapper, tooltipContentElement);
+    this.renderer.appendChild(hostElement, tooltipWrapper);
+
+    // Add class name to tooltip content element
+    this.renderer.addClass(tooltipContentElement, 'tooltip-content');
+
+    this.tooltip = tooltipWrapper;
+
+    // this.renderer.appendChild(tooltipWrapper, tooltipContent.rootNodes[0]);
   }
 }
