@@ -1,0 +1,27 @@
+{
+    "Angular Spec": {
+        "prefix": "spec",
+        "body": [
+            "import { Spectator, createComponentFactory } from '@ngneat/spectator/jest';",
+            "import { ${0} } from './${1:${TM_FILENAME_BASE/(.*)\\.spec/$1/}}';",
+            "",
+            "describe('${0}', () => {",
+            "  let spectator: Spectator<${0}>;",
+            "",
+            "  const createComponent = createComponentFactory({",
+            "    component: ${0},",
+            "    // add any providers or declarations here",
+            "  });",
+            "",
+            "  beforeEach(() => {",
+            "    spectator = createComponent();",
+            "  });",
+            "",
+            "  it('should create', () => {",
+            "    expect(spectator.component).toBeTruthy();",
+            "  });",
+            "});"
+        ],
+        "description": "Angular spec file for testing a component using Spectator"
+    }
+}
